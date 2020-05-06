@@ -1,4 +1,6 @@
 const express = require("express");
+const db = require("./db");
+
 const cors = require("cors");
 
 const { uuid } = require("uuidv4");
@@ -8,7 +10,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const repositories = [];
+const weatherData = [];
 const weatherStations = [
   {
     id: 1, 
@@ -53,6 +55,8 @@ app.use(logRequests);
 
 /* Lista todas as estações meteorológicas disponíveis. */
 app.get("/weather-stations", (request, response) => {
+  
+  db.query('SELECT * FROM weather_stations')
   return response.json(weatherStations);
 });
 
@@ -91,27 +95,41 @@ app.post("/weather-stations", (request, response) => {
 
 app.post("/weather-data/:id", (request, response) => {
   const { id } =  request.params;
+  const { air_temperature, air_humidity, wind_speed, rainfall, moment } = request.body;
 
   const stationIndex = weatherStations.findIndex(station => station.id == id);
 
   if(stationIndex < 0 ) return response.status(400).json({ error: 'Station not found!' });
 
-  //weatherStations[stationIndex].likes += 1;
+  const datat = {
+    id,
+    air_temperature, 
+    air_humidity, 
+    wind_speed, 
+    rainfall, 
+    moment
+  };
 
-  return response.json(weatherStations[stationIndex]);
+  weatherData.push(datat);
+
+  return response.json(datat);
 });
-/*
-CREATE TABLE `weather_data_1` (
-  `id` int(11) NOT NULL,
-  `air_temperature` float NOT NULL,
-  `air_humidity` int(11) DEFAULT NULL,
-  `wind_speed` float NOT NULL,
-  `rainfall` float NOT NULL DEFAULT '0',
-  `moment` datetime NOT NULL,
-  PRIMARY KEY (`id`,`moment`),
-  CONSTRAINT `weather_data_1_FK` FOREIGN KEY (`id`) REFERENCES `weather_stations` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-;
-*/
+
+app.get("/weather-data/:id", (request, response) => {
+  
+  const { id } = request.params;
+  
+  const stationIndex = weatherStations.findIndex(station => station.id == id);
+
+  if (stationIndex < 0) {
+    return response.status(404).json({ error: 'Station not found!'});
+  }
+
+  const arrayWeatherData = weatherData.filter(weather => weather.id == id);
+
+  return response.status(200).json(arrayWeatherData);
+});
+
+
 
 module.exports = app;

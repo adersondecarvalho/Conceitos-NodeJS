@@ -4,13 +4,14 @@
   "main": "src/server.js",
   "license": "MIT",
   "scripts": {
-    "start": "src/server.js",
+    "start": "node src/server.js",
     "dev": "nodemon",
     "test": "jest"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "mysql": "^2.18.1",
     "uuidv4": "^6.0.7"
   },
   "devDependencies": {
